@@ -1,144 +1,110 @@
 pip install openai azure-search-documents python-dotenv
 
+
 import os
 from dotenv import load_dotenv
 
-from openai import AzureOpenAI
-from azure.search.documents import SearchClient
-from azure.core.credentials import AzureKeyCredential
+from azure.identity import DefaultAzureCredential
 
-# ---------------------------------------
+from azure.ai.projects import AIProjectClient
+from azure.ai.projects.models import AzureAISearchTool
+
+# ---------------------------------------------------
 # Load Environment Variables
-# ---------------------------------------
+# ---------------------------------------------------
+
 load_dotenv()
 
-AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
+PROJECT_ENDPOINT = os.getenv("PROJECT_ENDPOINT")
 
-CHAT_DEPLOYMENT = os.getenv("CHAT_DEPLOYMENT")
-EMBEDDING_DEPLOYMENT = os.getenv("EMBEDDING_DEPLOYMENT")
+SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
+SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX")
 
-SEARCH_ENDPOINT = os.getenv("SEARCH_ENDPOINT")
-SEARCH_API_KEY = os.getenv("SEARCH_API_KEY")
-SEARCH_INDEX = os.getenv("SEARCH_INDEX")
+MODEL = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
 
-# ---------------------------------------
-# Azure OpenAI Client
-# ---------------------------------------
+# ---------------------------------------------------
+# Connect to Azure AI Foundry
+# ---------------------------------------------------
 
-client = AzureOpenAI(
-    api_key=AZURE_OPENAI_API_KEY,
-    azure_endpoint=AZURE_OPENAI_ENDPOINT,
-    api_version=AZURE_OPENAI_API_VERSION,
+project = AIProjectClient(
+    endpoint=PROJECT_ENDPOINT,
+    credential=DefaultAzureCredential(),
 )
 
-# ---------------------------------------
-# Azure AI Search Client
-# ---------------------------------------
+# ---------------------------------------------------
+# Existing Azure AI Search Index
+# ---------------------------------------------------
 
-search_client = SearchClient(
-    endpoint=SEARCH_ENDPOINT,
-    index_name=SEARCH_INDEX,
-    credential=AzureKeyCredential(SEARCH_API_KEY),
+search = AzureAISearchTool(
+    index_connection={
+        "endpoint": SEARCH_ENDPOINT,
+        "index_name": SEARCH_INDEX,
+    }
 )
 
-# ---------------------------------------
-# Generate Embedding
-# ---------------------------------------
+# ---------------------------------------------------
+# Create Agent
+# ---------------------------------------------------
 
-def generate_embedding(text):
+agent = project.agents.create_agent(
+    model=MODEL,
+    name="blob-rag-agent",
+    instructions="""
+You are a helpful assistant.
 
-    response = client.embeddings.create(
-        model=EMBEDDING_DEPLOYMENT,
-        input=text
+Always answer ONLY using the Azure AI Search index.
+
+If information is unavailable in the index,
+say:
+'I could not find that information in the knowledge base.'
+""",
+    tools=search.definitions,
+    tool_resources=search.resources,
+)
+
+print(f"Agent Created : {agent.id}")
+
+# ---------------------------------------------------
+# Create Thread
+# ---------------------------------------------------
+
+thread = project.agents.create_thread()
+
+print("Type exit to stop.\n")
+
+while True:
+
+    question = input("You : ")
+
+    if question.lower() == "exit":
+        break
+
+    project.agents.create_message(
+        thread_id=thread.id,
+        role="user",
+        content=question,
     )
 
-    return response.data[0].embedding
-
-
-# ---------------------------------------
-# Search Index
-# ---------------------------------------
-
-def search_documents(question):
-
-    embedding = generate_embedding(question)
-
-    results = search_client.search(
-        search_text=None,
-        vector_queries=[
-            {
-                "kind": "vector",
-                "vector": embedding,
-                "fields": "contentVector",
-                "k": 5,
-            }
-        ]
+    run = project.agents.create_run(
+        thread_id=thread.id,
+        agent_id=agent.id,
     )
 
-    docs = []
+    project.agents.process_run(run, thread)
 
-    for doc in results:
-        docs.append(doc["content"])
+    messages = project.agents.list_messages(thread.id)
 
-    return "\n\n".join(docs)
+    print("\nAssistant:\n")
 
+    for message in reversed(messages.data):
 
-# ---------------------------------------
-# Ask LLM
-# ---------------------------------------
+        if message.role == "assistant":
 
-def ask_llm(question):
+            for part in message.content:
 
-    context = search_documents(question)
+                if hasattr(part, "text"):
+                    print(part.text.value)
 
-    prompt = f"""
-You are an AI Assistant.
-
-Use ONLY the information below to answer.
-
-Context:
-{context}
-
-Question:
-{question}
-
-Answer:
-"""
-
-    response = client.chat.completions.create(
-        model=CHAT_DEPLOYMENT,
-        messages=[
-            {
-                "role": "system",
-                "content": "Answer only from the supplied context."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0
-    )
-
-    return response.choices[0].message.content
-
-
-# ---------------------------------------
-# Main
-# ---------------------------------------
-
-if __name__ == "__main__":
-
-    while True:
-
-        question = input("\nAsk Question (type exit): ")
-
-        if question.lower() == "exit":
             break
 
-        answer = ask_llm(question)
-
-        print("\nAnswer:\n")
-        print(answer)
+    print("-" * 60)
