@@ -2,6 +2,7 @@ pip install openai azure-search-documents python-dotenv
 pip install azure-ai-projects
 pip install azure-identity
 pip install python-dotenv
+pip install fastapi uvicorn openai python-dotenv azure-search-documents azure-core python-multipart
 
 
 import os
