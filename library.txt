@@ -1,4 +1,7 @@
 pip install openai azure-search-documents python-dotenv
+pip install azure-ai-projects
+pip install azure-identity
+pip install python-dotenv
 
 
 import os
