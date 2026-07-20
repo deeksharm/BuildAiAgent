@@ -1,91 +1,74 @@
-import os
+from openai import AzureOpenAI
+from azure.core.credentials import AzureKeyCredential
+from azure.search.documents import SearchClient
 from dotenv import load_dotenv
+import os
 
-from azure.identity import DefaultAzureCredential
-from azure.ai.projects import AIProjectClient
-from azure.ai.projects.models import AzureAISearchTool
-
-# Load .env
 load_dotenv()
 
-# Configuration
-PROJECT_ENDPOINT = os.getenv("PROJECT_ENDPOINT")
-SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
-SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX")
-MODEL = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
+# -----------------------------
+# ENV VARIABLES
+# -----------------------------
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
+AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_KEY")
+AZURE_SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX")
 
-# Connect to Azure AI Foundry
-project = AIProjectClient(
-    endpoint=PROJECT_ENDPOINT,
-    credential=DefaultAzureCredential(),
+# -----------------------------
+# AZURE OPENAI CLIENT
+# -----------------------------
+client = AzureOpenAI(
+    api_key=AZURE_OPENAI_API_KEY,
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    api_version="2024-02-15-preview"
+)
+deployment = AZURE_OPENAI_DEPLOYMENT
+
+# -----------------------------
+# AZURE AI SEARCH CLIENT
+# -----------------------------
+search_client = SearchClient(
+    endpoint=AZURE_SEARCH_ENDPOINT,
+    index_name=AZURE_SEARCH_INDEX,
+    credential=AzureKeyCredential(AZURE_SEARCH_KEY)
 )
 
-# Connect Azure AI Search Index
-search = AzureAISearchTool(
-    index_connection={
-        "endpoint": SEARCH_ENDPOINT,
-        "index_name": SEARCH_INDEX,
-    }
-)
+# -----------------------------
+# CORE AGENT FUNCTION
+# -----------------------------
+def ask_agent(message: str) -> str:
+    results = search_client.search(message)
 
-# Create Agent
-agent = project.agents.create_agent(
-    name="blob-rag-agent",
-    model=MODEL,
-    instructions="""
-You are a helpful AI Assistant.
+    context = ""
+    for result in results:
+        context += str(result) + "\n"
 
-Always answer from the Azure AI Search knowledge base.
+    prompt = f"""
+    Use ONLY the following enterprise knowledge:
+    {context}
+    Answer this question:
+    {message}
+    """
 
-If the answer is not found, say:
-'I could not find that information in the knowledge base.'
-""",
-    tools=search.definitions,
-    tool_resources=search.resources,
-)
-
-print(f"Agent Created: {agent.id}")
-
-# Create Conversation Thread
-thread = project.agents.create_thread()
-
-print(f"Thread Created: {thread.id}")
-
-# Conversation Loop
-while True:
-
-    question = input("\nYou: ")
-
-    if question.lower() == "exit":
-        break
-
-    # Add user message
-    project.agents.create_message(
-        thread_id=thread.id,
-        role="user",
-        content=question,
+    completion = client.chat.completions.create(
+        model=deployment,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
 
-    # Run agent
-    run = project.agents.create_run(
-        thread_id=thread.id,
-        agent_id=agent.id,
-    )
+    return completion.choices[0].message.content
 
-    # Wait until completed
-    project.agents.process_run(run, thread)
-
-    # Read latest assistant response
-    messages = project.agents.list_messages(thread.id)
-
-    for message in reversed(messages.data):
-
-        if message.role == "assistant":
-
-            print("\nAssistant:")
-
-            for part in message.content:
-                if hasattr(part, "text"):
-                    print(part.text.value)
-
+# -----------------------------
+# SIMPLE CLI LOOP
+# -----------------------------
+if __name__ == "__main__":
+    print("Enterprise RAG Assistant (type 'exit' to quit)")
+    while True:
+        message = input("\nYou: ")
+        if message.lower() in ("exit", "quit"):
             break
+        answer = ask_agent(message)
+        print(f"\nAssistant: {answer}")
