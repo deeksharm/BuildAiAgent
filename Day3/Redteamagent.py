@@ -182,6 +182,5 @@ df.to_csv(
 
 print("\nGovernance report exported successfully!")
 ________________________________________
-STEP 22 — Run Application
 Run:
 python main.py
