@@ -1,46 +1,3 @@
-Create Project Folder
-Create:
-red-teaming
-Open folder in:
-VS Code
-________________________________________
-Open Terminal
-Menu:
-Terminal → New Terminal
-________________________________________
-Create Virtual Environment
-Run:
-python -m venv .venv
-________________________________________
-Activate Environment
-Windows:
-.venv\Scripts\activate
-Expected:
-(.venv)
-________________________________________
-Install Required Packages
-Run:
-pip install openai python-dotenv pandas
-________________________________________
-Create Files
-Create:
-main.py
-.env
-________________________________________
-Get Azure Credentials From Foundry copy:
-API key
-endpoint
-deployment name
-________________________________________
-Configure .env
-Paste:
-AZURE_OPENAI_API_KEY=YOUR_API_KEY
-AZURE_OPENAI_ENDPOINT=https://YOUR_RESOURCE.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT=gpt-4o-mini
-________________________________________
-________________________________________
- Create main.py
-Paste:
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 import pandas as pd
@@ -181,6 +138,4 @@ df.to_csv(
 )
 
 print("\nGovernance report exported successfully!")
-________________________________________
-Run:
-python main.py
+
