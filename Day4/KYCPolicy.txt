@@ -1,0 +1,64 @@
+ABC BANK
+KYC POLICY
+
+Document Version: 1.0
+Effective Date: 01 January 2026
+
+Purpose
+
+Know Your Customer (KYC) is mandatory for all banking customers.
+
+Identity Documents
+
+Any one of the following:
+
+• Aadhaar Card
+• Passport
+• Voter ID
+• Driving License
+
+Address Proof
+
+Any one:
+
+• Aadhaar Card
+• Utility Bill
+• Passport
+• Bank Statement
+
+PAN Requirement
+
+PAN Card is mandatory for:
+
+• Opening Savings Account
+• Opening Current Account
+• Applying for Loans
+• Applying for Credit Cards
+
+KYC Verification
+
+Verification methods include:
+
+• Physical Verification
+• Video KYC
+• Aadhaar e-KYC
+
+KYC Update
+
+Customers must update KYC information every 10 years or whenever personal information changes.
+
+Failure to Update
+
+Failure to complete KYC may result in:
+
+• Temporary account restrictions
+• Transaction limitations
+• Account freeze as per RBI regulations
+
+Customer Support
+
+Email:
+kyc@abcbank.com
+
+Phone:
+1800-888-555

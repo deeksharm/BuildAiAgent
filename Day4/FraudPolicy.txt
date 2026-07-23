@@ -1,0 +1,62 @@
+ABC BANK
+FRAUD PREVENTION POLICY
+
+Document Version: 1.0
+Effective Date: 01 January 2026
+
+Purpose
+
+ABC Bank is committed to preventing financial fraud and protecting customer information.
+
+Common Fraud Types
+
+• Phishing Emails
+• Fake Phone Calls
+• Fake Loan Offers
+• OTP Fraud
+• UPI Fraud
+• Identity Theft
+
+Security Guidelines
+
+Never share:
+
+• OTP
+• ATM PIN
+• CVV
+• Internet Banking Password
+• Mobile Banking Password
+
+Bank employees will never ask for these details.
+
+Customer Responsibilities
+
+Customers should:
+
+• Verify SMS alerts
+• Enable transaction notifications
+• Report suspicious activities immediately
+
+Fraud Reporting
+
+Emergency Helpline:
+1800-999-111
+
+Email:
+fraud@abcbank.com
+
+Response Timeline
+
+Fraud complaints are acknowledged within 24 hours.
+
+Investigation usually completes within 7 working days.
+
+Account Blocking
+
+Accounts may be temporarily blocked if suspicious activity is detected.
+
+Security Recommendations
+
+• Change passwords every 90 days.
+• Enable Multi-Factor Authentication.
+• Never click unknown links.
