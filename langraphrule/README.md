@@ -19,7 +19,6 @@ In the [Azure AI Foundry portal](https://ai.azure.com):
 python -m venv .venv
 
 # activate it
-source .venv/bin/activate        # macOS/Linux
 .venv\Scripts\activate           # Windows (PowerShell: .venv\Scripts\Activate.ps1)
 
 pip install -r requirements.txt
