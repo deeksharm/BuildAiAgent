@@ -7,3 +7,4 @@ azure-storage-blob>=12.20.0
 numpy>=1.26.4
 
 python -m pip install azure-storage-blob
+pip install fastapi uvicorn openai python-dotenv azure-search-documents azure-core python-multipart
