@@ -5,6 +5,8 @@
 4. python -m pip install openai
 5. python -m pip install python-dotenv
 6. python -m pip install python-dotenv
+7. python -m pip install langchain-openai
+
 
 team3=
 AZURE_OPENAI_ENDPOINT=https://agenticai-team3-foundry.openai.azure.com/
