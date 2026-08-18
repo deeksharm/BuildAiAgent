@@ -1,4 +1,3 @@
-pip install "langgraph>=0.2.0" "langchain>=0.3.0" "langchain-openai>=0.2.0" "python-dotenv>=1.0.0"
-
-
-python -m pip install --upgrade pip
+1. python -m pip install --upgrade pip
+   
+2. pip install "langgraph>=0.2.0" "langchain>=0.3.0" "langchain-openai>=0.2.0" "python-dotenv>=1.0.0"
